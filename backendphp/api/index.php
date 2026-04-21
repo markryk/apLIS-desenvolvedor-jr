@@ -1,4 +1,6 @@
 <?php
+    include_once "cors.php";
+    //Esse arquivo cors.php foi preciso, pois estava dando erro no frontend, para permitir os cabeçalhos HTTP
     include_once "../config/Database.php";
 
     $db = (new Database())->getConnection();

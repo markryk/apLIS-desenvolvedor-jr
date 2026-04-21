@@ -1,6 +1,9 @@
 const express = require('express');
 const app = express();
 const db = require('./db');
+const cors = require('cors');
+
+app.use(cors());
 
 //Recebe JSON
 app.use(express.json());
@@ -50,9 +53,9 @@ app.post('/api/v1/pacientes', async (req, res) => {
         );
 
         return res.status(201).json({
-            mensagem: "Paciente inserido com sucesso",
             id: result.insertId,
-            dados: {nome, dataNascimento, carteirinha, cpf}
+            data: {nome, dataNascimento, carteirinha, cpf}, 
+            status: "sucesso"
         });
         
     } catch (error) {
