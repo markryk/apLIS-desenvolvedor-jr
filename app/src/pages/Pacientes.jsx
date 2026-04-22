@@ -17,38 +17,11 @@ export default function Pacientes() {
     setPacientes(res.data);
   }
 
-  function BasicExample() {
-    return (
-      <Table striped bordered hover>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Username</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>1</td>
-            <td>Mark</td>
-            <td>Otto</td>
-            <td>@mdo</td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>Jacob</td>
-            <td>Thornton</td>
-            <td>@fat</td>
-          </tr>
-          <tr>
-            <td>3</td>
-            <td colSpan={2}>Larry the Bird</td>
-            <td>@twitter</td>
-          </tr>
-        </tbody>
-      </Table>
-    );
+  function formatCpf(text) {
+    const badchars = /[^\d]/g
+    const mask = /(\d{3})(\d{3})(\d{3})(\d{2})/
+    const cpf = new String(text).replace(badchars, "");
+    return cpf.replace(mask, "$1.$2.$3-$4");
   }
 
   async function salvar(e) {
@@ -83,22 +56,6 @@ export default function Pacientes() {
     <div>
       <h2> Pacientes </h2>
 
-      {/* <form onSubmit={salvar}>
-        <input type="text" class="form-control" placeholder="Nome" value={nome} onChange={(e) => setNome(e.target.value)}/>
-        <br />
-
-        <input type="date" placeholder="Data de nascimento" value={dataNascimento} onChange={(e) => setDataNascimento(e.target.value)}/>
-        <br />
-
-        <input type="number" placeholder="Carteirinha" value={carteirinha} onChange={(e) => setCarteirinha(e.target.value)}/>
-        <br />
-
-        <input type="text" placeholder="CPF" value={cpf} onChange={(e) => setCPF(e.target.value)}/>
-        <br />
-
-        <button type="submit">Cadastrar</button>
-      </form>*/}
-
       <Form onSubmit={salvar}>
         <Form.Group className="mb-3">
           <Form.Label> Nome </Form.Label>
@@ -121,22 +78,35 @@ export default function Pacientes() {
         </Form.Group>
 
         <Button variant="primary" type="submit">
-          Submit
+          Cadastrar
         </Button>
       </Form>
 
       {/*Mensagem de feedback */}
       {mensagem && <p> {mensagem} </p>}
 
-      {/*<ul>
-        {pacientes.map((p) => (
-          <li key={p.id}>
-            {p.nome} - {p.dataNascimento} - {p.carteirinha} - {p.cpf}
-          </li>
-        ))}
-      </ul>*/}
-
-      BasicExample();
+      <Table striped bordered hover className="m-3">
+        <thead>
+          <tr>
+            <th> # </th>
+            <th> Nome </th>
+            <th> Data de Nascimento </th>
+            <th> Carteirinha </th>
+            <th> CPF </th>
+          </tr>
+        </thead>
+        <tbody>
+          {pacientes.map((p) => (
+            <tr>
+              <td> {p.id} </td>
+              <td> {p.nome} </td>
+              <td> {new Intl.DateTimeFormat("pt-BR").format(new Date(p.dataNascimento))} </td>
+              <td> {p.carteirinha} </td>
+              <td> {formatCpf(p.cpf)} </td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
     </div>
   );
 }
