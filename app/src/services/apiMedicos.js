@@ -6,3 +6,6 @@ const api = axios.create({
 
 export const getMedicos = () => api.get("/medicos");
 export const createMedico = (data) => api.post("/medicos", data);
+//export const updateMedico = (data) => api.put("/medicos", data);
+export const getMedicoById = (id) => api.put(`/medicos?id=${id}`);
+export const deleteMedico = (id) => api.delete(`/medicos?id=${id}`);

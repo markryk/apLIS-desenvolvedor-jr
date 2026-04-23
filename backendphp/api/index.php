@@ -71,6 +71,94 @@
             http_response_code(201);
             echo json_encode($response, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+
+            $data = json_decode(file_get_contents("php://input"), true);
+
+            $id = $data['id'] ?? null;
+            $nome = $data['nome'] ?? '';
+            $CRM = $data['CRM'] ?? '';
+            $UFCRM = $data['UFCRM'] ?? '';
+
+            //Validação básica
+            if (!$id || !$nome || !$CRM || !$UFCRM) {
+                echo json_encode([
+                    "success" => false,
+                    "message" => "Dados incompletos"
+                ]);
+                exit;
+            }
+
+            try {
+
+                //Verificar CRM duplicado (exceto o próprio registro)
+                $check = "SELECT id FROM tb_medicos WHERE CRM = :CRM AND id != :id";
+                $stmt = $db->prepare($check);
+
+                $stmt->execute([
+                    ":CRM" => $CRM,
+                    ":id" => $id
+                ]);
+
+                if ($stmt->rowCount() > 0) {
+                    echo json_encode([
+                        "success" => false,
+                        "message" => "CRM já cadastrado para outro médico"
+                    ]);
+                    exit;
+                }
+
+                //Atualizar médico
+                $sqlUpdate = "UPDATE tb_medicos SET nome = :nome, CRM = :CRM, UFCRM = :UFCRM WHERE id = :id";
+
+                $stmtUpdate = $db->prepare($sqlUpdate);
+
+                $stmtUpdate->execute([
+                    ":nome" => $nome,
+                    ":CRM" => $CRM,
+                    ":UFCRM" => $UFCRM,
+                    ":id" => $id
+                ]);
+
+                echo json_encode([
+                    "success" => true,
+                    "message" => "Médico atualizado com sucesso"
+                ]);
+
+            } catch (PDOException $e) {
+
+                //Tratamento de erro (ex: UNIQUE constraint)
+                if ($e->getCode() == 23000) {
+                    echo json_encode([
+                        "success" => false,
+                        "message" => "CRM já existe"
+                    ]);
+                } else {
+                    echo json_encode([
+                        "success" => false,
+                        "message" => "Erro ao atualizar médico"
+                    ]);
+                }
+            }
+
+            //http_response_code(201);
+            //echo json_encode($response, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
+            $id = $_GET['id'];
+
+            $stmt = $conn->prepare("DELETE FROM tb_medicos WHERE id=?");
+            $stmt->bind_param("i", $id);
+
+            if ($stmt->execute()) {
+                echo json_encode(["success" => true]);
+            } else {
+                echo json_encode(["success" => false]);
+            }
+        }
+
     }
 
 

@@ -1,5 +1,6 @@
 ## Estrutura do Frontend
 
+```
 src/
  ├── components/
  │    ├── Sidebar.jsx
@@ -15,6 +16,7 @@ src/
  ├── App.jsx
  ├── main.jsx
  └── styles.css
+```
 
 ### Problemas com CORS
 

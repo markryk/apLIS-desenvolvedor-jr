@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import Medicos from "./pages/Medicos";
+import EditarMedico from "./pages/EditarMedico";
 import Pacientes from "./pages/Pacientes";
 
 export default function App() {
@@ -12,6 +13,7 @@ export default function App() {
         <div style={{ padding: "20px", width: "100%" }}>
           <Routes>
             <Route path="/medicos" element={<Medicos />} />
+            <Route path="/medicos/editar/:id" element={<EditarMedico />} />
             <Route path="/pacientes" element={<Pacientes />} />
           </Routes>
         </div>
