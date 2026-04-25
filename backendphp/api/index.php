@@ -5,17 +5,44 @@
 
     $db = (new Database())->getConnection();
 
+    //$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
     $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    $uriParts = explode('/', $uri);
+
+    // Ex: /api/v1/medicos/5
+    $id = $uriParts[4] ?? null;
+
     $method = $_SERVER['REQUEST_METHOD'];
 
     if ($uri === '/api/v1/medicos') {
 
-        if ($method === 'GET') {
-            $stmt = $db->prepare("SELECT id, nome, crm, ufcrm FROM tb_medicos");
+        /*if ($method === 'GET') {
+            $stmt = $db->prepare("SELECT id, nome, crm, ufcrm FROM tb_medicos ORDER BY id DESC");
             $stmt->execute();
 
             $medicos = $stmt->fetchAll(PDO::FETCH_ASSOC);
             echo json_encode($medicos);
+        }*/
+
+        // LISTAR TODOS
+        if ($uri === '/api/v1/medicos' && $method === 'GET') {
+            $stmt = $db->prepare("SELECT id, nome, crm, ufcrm FROM tb_medicos ORDER BY id DESC");
+            $stmt->execute();
+            echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+            exit;
+        }
+
+        // BUSCAR POR ID
+        if (preg_match('#^/api/v1/medicos/\d+$#', $uri) && $method === 'GET') {
+
+            $id = basename($uri);
+
+            $stmt = $db->prepare("SELECT id, nome, crm, ufcrm FROM tb_medicos WHERE id = :id");
+            $stmt->execute([":id" => $id]);
+
+            echo json_encode($stmt->fetch(PDO::FETCH_ASSOC));
+            exit;
         }
 
         if ($method === 'POST') {
@@ -146,11 +173,28 @@
             //echo json_encode($response, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         }
 
+        /*if (preg_match('#^/api/v1/medicos/\d+$#', $uri) && $method === 'PUT') {
+
+            $id = basename($uri);
+            $data = json_decode(file_get_contents("php://input"), true);
+
+            $stmt = $db->prepare("UPDATE tb_medicos SET nome = :nome, CRM = :CRM, UFCRM = :UFCRM WHERE id = :id");
+
+            $stmt->execute([
+                ":nome" => $data["nome"],
+                ":CRM" => $data["CRM"],
+                ":UFCRM" => $data["UFCRM"],
+                ":id" => $id
+            ]);
+
+            echo json_encode(["success" => true]);
+        }*/
+
         if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
             $id = $_GET['id'];
 
-            $stmt = $conn->prepare("DELETE FROM tb_medicos WHERE id=?");
-            $stmt->bind_param("i", $id);
+            $stmt = $db->prepare("DELETE FROM tb_medicos WHERE id= :id");
+            $stmt->bindParam(":id", $id);
 
             if ($stmt->execute()) {
                 echo json_encode(["success" => true]);
@@ -160,6 +204,4 @@
         }
 
     }
-
-
 ?>

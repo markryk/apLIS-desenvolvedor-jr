@@ -3,7 +3,7 @@ import Form from 'react-bootstrap/Form';
 import Table from 'react-bootstrap/Table';
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getMedicos, createMedico, getMedicoById, deleteMedico } from "../services/apiMedicos";
+import { getMedicos, createMedico, updateMedico, deleteMedico } from "../services/apiMedicos";
 
 export default function Medicos() {
   const navigate = useNavigate();
@@ -27,14 +27,9 @@ export default function Medicos() {
 
     try {
       if (editando) {
-        await updateMedico({
-          id: idAtual,
-          nome,
-          CRM, 
-          UFCRM
-        });
+        await updateMedico({id: idAtual, nome, CRM, UFCRM});
 
-        setMensagem("✏️ Médico atualizado!");
+        setMensagem("Médico atualizado!");
       } else {
         await createMedico({ nome, CRM, UFCRM });
         setMensagem("✅ Médico cadastrado!");
@@ -43,46 +38,33 @@ export default function Medicos() {
       limpar();
       carregar();
 
-      //const res = await createMedico({ nome, CRM, UFCRM });
-
-      /*if (res.data[0].status == "sucesso") {
-          //setTipoMsg("sucesso");
-          setMensagem("✅ Médico cadastrado com sucesso!");
-          setNome("");
-          setCRM("");
-          setUFCRM("");
-          carregar();
-      } else {
-          setMensagem("❌ Erro ao cadastrar médico!");
-      }*/
-
     } catch (error) {
       setMensagem("❌ Erro na operação!");
     }
+  }
 
-    function editar(medico) {
-      setEditando(true);
-      setIdAtual(medico.id);
-      setNome(medico.nome);
-      setCRM(medico.CRM);
-      setUFCRM(medico.UFCRM);
-    }
+  function editar(medico) {
+    setEditando(true);
+    setIdAtual(medico.id);
+    setNome(medico.nome);
+    setCRM(medico.crm);
+    setUFCRM(medico.ufcrm);
+  }
 
-    async function excluir(id) {
-      if (!confirm("Deseja excluir este médico?")) return;
+  async function excluir(id) {
+    if (!confirm("Deseja excluir este médico?")) return;
 
-      await deleteMedico(id);
-      setMensagem("Médico removido");
-      carregar();
-    }
+    await deleteMedico(id);
+    setMensagem("Médico removido");
+    carregar();
+  }
 
-    function limpar() {
-      setNome("");
-      setCRM("");
-      setUFCRM("");
-      setEditando(false);
-      setIdAtual(null);
-    }
+  function limpar() {
+    setNome("");
+    setCRM("");
+    setUFCRM("");
+    setEditando(false);
+    setIdAtual(null);
   }
 
   useEffect(() => {
@@ -138,7 +120,11 @@ export default function Medicos() {
           </Form.Select>
         </Form.Group>
 
-        <Button variant="primary" type="submit"> Cadastrar </Button>
+        <Button variant="primary" type="submit"> {editando ? "Atualizar" : "Cadastrar"} </Button>
+
+        {editando && (
+          <Button variant="secondary" onClick={limpar} className="ms-2"> Cancelar </Button>
+        )}
       </Form>
 
       {/*Mensagem de feedback */}
@@ -155,15 +141,15 @@ export default function Medicos() {
           </tr>
         </thead>
         <tbody>
-          {medicos.map((p) => (
-            <tr>
-              <td> {p.id} </td>
-              <td> {p.nome} </td>
-              <td> {p.crm} </td>
-              <td> {p.ufcrm} </td>
+          {medicos.map((m) => (
+            <tr key={m.id}>
+              <td> {m.id} </td>
+              <td> {m.nome} </td>
+              <td> {m.crm} </td>
+              <td> {m.ufcrm} </td>
               <td>
-                <button onClick={() => navigate(`/medicos/editar/${p.id}`)}> Editar </button>
-                <button variant="danger" onClick={() => excluir(p.id)}> Excluir </button>
+                <Button size="sm" onClick={() => editar(m)}> Editar </Button>
+                <Button size="sm" variant="danger" className="ms-2" onClick={() => excluir(m.id)}> Excluir </Button>
               </td>
             </tr>
           ))}

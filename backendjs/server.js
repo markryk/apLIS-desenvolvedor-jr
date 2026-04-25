@@ -8,6 +8,8 @@ app.use(cors());
 //Recebe JSON
 app.use(express.json());
 
+app.use(express.urlencoded({ extended: true }));
+
 // "Banco de dados" em memória
 let pacientes = [];
 
@@ -66,6 +68,75 @@ app.post('/api/v1/pacientes', async (req, res) => {
         });
     }
 
+});
+
+//PUT: atualiza paciente pelo ID
+app.put('/api/v1/pacientes/:id', async (req, res) => {
+    console.log("BODY:", req.body);
+    try {
+        const { id } = req.params;
+        const { nome, dataNascimento, carteirinha, cpf } = req.body;
+
+        // Validação simples
+        if (!nome || !dataNascimento || !carteirinha || !cpf) {
+            return res.status(422).json({
+                erro: "Campos obrigatórios: nome, data de nascimento, carteirinha e cpf"
+            });
+        }
+
+        const [result] = await db.execute(
+            'UPDATE tb_pacientes SET nome = ?, dataNascimento = ?, carteirinha = ?, cpf = ? WHERE id = ?',
+            [nome, dataNascimento, carteirinha, cpf, id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                erro: "Paciente não encontrado"
+            });
+        }
+
+        return res.status(200).json({
+            id,
+            data: { nome, dataNascimento, carteirinha, cpf },
+            status: "atualizado com sucesso"
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        return res.status(500).json({
+            erro: "Erro interno do servidor"
+        });
+    }
+});
+
+//DELETE: remove paciente pelo ID
+app.delete('/api/v1/pacientes/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const [result] = await db.execute(
+            'DELETE FROM tb_pacientes WHERE id = ?',
+            [id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                erro: "Paciente não encontrado"
+            });
+        }
+
+        return res.status(200).json({
+            status: "paciente excluído com sucesso"
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        return res.status(500).json({
+            erro: "Erro interno do servidor"
+        });
+    }
 });
 
 app.listen(3000, () => {
